@@ -1,0 +1,17 @@
+{
+  "name": "marketsense",
+  "version": "1.0.0",
+  "description": "Comprehensive stock analysis platform",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev -w apps/backend",
+    "dev:frontend": "npm run dev -w apps/frontend",
+    "build:backend": "npm run build -w apps/backend",
+    "build:frontend": "npm run build -w apps/frontend",
+    "install:all": "npm install"
+  }
+}
