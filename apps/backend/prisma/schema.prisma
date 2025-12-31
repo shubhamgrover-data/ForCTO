@@ -1,0 +1,141 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String      @id @default(uuid())
+  email         String      @unique
+  password      String
+  name          String?
+  watchlists    Watchlist[]
+  priceAlerts   PriceAlert[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Company {
+  id                String          @id @default(uuid())
+  symbol            String          @unique
+  name              String
+  description       String?
+  sector            String?
+  industry          String?
+  country           String?
+  exchange          String?
+  currency          String?
+  website           String?
+  logoUrl           String?
+  financials        FinancialData[]
+  shareholding      Shareholding[]
+  annualReports     AnnualReport[]
+  news              News[]
+  stock             Stock?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+}
+
+model Stock {
+  id            String    @id @default(uuid())
+  symbol        String    @unique
+  companyId     String    @unique
+  company       Company   @relation(fields: [companyId], references: [id])
+  currentPrice  Float?
+  change        Float?
+  changePercent Float?
+  marketCap     Float?
+  peRatio       Float?
+  dividendYield Float?
+  volume        BigInt?
+  lastUpdated   DateTime  @default(now())
+  watchlists    WatchlistItem[]
+  priceAlerts   PriceAlert[]
+}
+
+model FinancialData {
+  id              String   @id @default(uuid())
+  companyId       String
+  company         Company  @relation(fields: [companyId], references: [id])
+  period          String   // e.g., "FY2023", "Q3 2023"
+  date            DateTime
+  revenue         Float?
+  netIncome       Float?
+  totalAssets     Float?
+  totalLiabilities Float?
+  cashFlow        Float?
+  isQuarterly     Boolean  @default(false)
+  createdAt       DateTime @default(now())
+}
+
+model Shareholding {
+  id          String   @id @default(uuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id])
+  category    String   // e.g., "Promoter", "FII", "DII", "Public"
+  percentage  Float
+  date        DateTime
+  createdAt   DateTime @default(now())
+}
+
+model AnnualReport {
+  id          String   @id @default(uuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id])
+  year        Int
+  reportUrl   String
+  summary     String?
+  createdAt   DateTime @default(now())
+}
+
+model News {
+  id          String   @id @default(uuid())
+  companyId   String?
+  company     Company? @relation(fields: [companyId], references: [id])
+  title       String
+  content     String?
+  source      String?
+  url         String?
+  sentiment   Float?   // -1 to 1
+  publishedAt DateTime
+  createdAt   DateTime @default(now())
+}
+
+model Watchlist {
+  id        String          @id @default(uuid())
+  name      String
+  userId    String
+  user      User            @relation(fields: [userId], references: [id])
+  items     WatchlistItem[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+}
+
+model WatchlistItem {
+  id          String    @id @default(uuid())
+  watchlistId String
+  watchlist   Watchlist @relation(fields: [watchlistId], references: [id])
+  stockId     String
+  stock       Stock     @relation(fields: [stockId], references: [id])
+  createdAt   DateTime  @default(now())
+
+  @@unique([watchlistId, stockId])
+}
+
+model PriceAlert {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  stockId       String
+  stock         Stock    @relation(fields: [stockId], references: [id])
+  targetPrice   Float
+  condition     String   // "ABOVE" or "BELOW"
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  triggeredAt   DateTime?
+}
